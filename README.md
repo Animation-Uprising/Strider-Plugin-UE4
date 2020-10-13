@@ -1,5 +1,5 @@
 # Strider-Plugin-UE4
-This is a private repository for verified users of the 'Strider Plugin' (UE4) to access, fork and create pull requests to the plugin source code. To become verified and gain access to this repository, the user must send a copy of the marketplace invoice to the Strider support email.
+This is a private repository for verified users of the 'Strider Plugin' (UE4) to access, fork and create pull requests to the plugin source code.
 
 # Installation
 1. Close your project
