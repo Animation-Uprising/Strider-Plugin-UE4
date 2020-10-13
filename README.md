@@ -3,6 +3,7 @@ This is a private repository for verified users of the 'Strider Plugin' (UE4) to
 
 # Installation
 1. Close your project
+2. Right click on your .uproject file and choose "Generate Visual Studio Project Files"
 2. Clone the repository into your projects 'plugin' folder
 3. Open your project and recompile (you will be asked to recompile before opening the project)
 4. Enable the plugin in the UE4 editor and restart the editor when prompted
