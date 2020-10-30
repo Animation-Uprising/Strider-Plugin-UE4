@@ -29,6 +29,7 @@ FAnimNode_SlopeWarp::FAnimNode_SlopeWarp()
 	SlopePoint(FVector::ZeroVector),
 	SlopeDetectionMode(ESlopeDetectionMode::ManualSlope),
 	SlopeRollCompensation(ESlopeRollCompensation::AdjustHips),
+	IKRootLeftVector(FVector::ForwardVector),
 	MaxSlopeAngle(45.0f),
 	HeightOffset(0.0f),
 	SlopeSmoothingRate(-1.0f),
@@ -80,12 +81,11 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 	FVector HipShift = FVector(0.0f, 0.0f, HeightShift + HeightOffset);
 	RootTransform_CS.AddToTranslation(HipShift);
 
-	//Create the transform for the IkRoot using Cross product of the normal and forward direction
-	FVector Forward = CurrentSlopeNormal.CrossProduct(CurrentSlopeNormal, 
-		IkRootTransform_CS.TransformVector(FVector::ForwardVector));
+	//Create a slope transform in component space using the slope normal and cross product of component axis
+	FVector Forward = CurrentSlopeNormal.CrossProduct(CurrentSlopeNormal, IkRootTransform_CS.TransformVector(IKRootLeftVector));
 	FVector Right = CurrentSlopeNormal.CrossProduct(Forward, CurrentSlopeNormal);
 
-	//Shift the hips downhill (relative to character facing direction
+	//Shift the hips downhill (relative to character facing direction)
 	HipShift -= Forward * DownSlopeShiftRate * Forward.Z;
 
 	IkRootTransform_CS = FTransform(Right, Forward, CurrentSlopeNormal, IkRootLocation_CS);
@@ -104,7 +104,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 			//Draw slope plane
 			FTransform planeTransform = IkRootTransform_CS;
 			planeTransform.SetLocation(UStriderMath::GetBoneWorldLocation(planeTransform, AnimInstanceProxy));
-			planeTransform.SetRotation(ComponentTransform.GetRotation() * IkRootTransform_CS.GetRotation() * IKRootOffset);
+			planeTransform.SetRotation(ComponentTransform.TransformRotation(IkRootTransform_CS.GetRotation() * IKRootOffset.Inverse())); // * IKRootOffset);
 			AnimInstanceProxy->AnimDrawDebugPlane(planeTransform, 100.0f, FColor::Cyan, false, -1, 0.0f);
 
 			if (DebugLevel > 2)
@@ -121,15 +121,13 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 	}
 #endif //ENABLE_ANIM_DEBUG && ENABLE_DRAW_DEBUG
 	
-	OutBoneTransforms.Add(FBoneTransform(IkRoot.CachedCompactPoseIndex, IkRootTransform_CS));
 	OutBoneTransforms.Add(FBoneTransform(FCompactPoseBoneIndex(0), RootTransform_CS));
+	OutBoneTransforms.Add(FBoneTransform(IkRoot.CachedCompactPoseIndex, IkRootTransform_CS));
 
 	FVector AverageHorizontalShift = FVector::ZeroVector;
-
-	//FVector AverageFootPosition = FVector::ZeroVector;
 	for (FLimbDefinition& Limb : Limbs)
 	{
-		//Limb LengthFBoneReference& Bone
+		//Limb Length
 		if (Limb.Length < 0.0f)
 			Limb.CalculateLength(Output.Pose);
 
@@ -137,6 +135,8 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 		FVector BaseLocation_CS = Limb.BaseBoneTransform_CS.GetLocation();
 		FTransform TipTransform_CS = Output.Pose.GetComponentSpaceTransform(Limb.IkTarget.CachedCompactPoseIndex);
 		Limb.TipLocation_CS = TipTransform_CS.GetLocation();
+
+		FTransform TipTransform_Local = Output.Pose.GetLocalSpaceTransform(Limb.IkTarget.CachedCompactPoseIndex);
 
 #if ENABLE_ANIM_DEBUG && ENABLE_DRAW_DEBUG
 		if (DebugLevel > 2)
@@ -159,7 +159,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 
 		if(SlopeRollCompensation == ESlopeRollCompensation::AdjustFeet)
 		{
-			TipTransform_CS.SetRotation(IkRootTransform_CS.GetRotation() * TipTransform_CS.GetRotation());
+			TipTransform_CS.SetRotation(IkRootTransform_CS.TransformRotation(TipTransform_Local.GetRotation()));
 			NewTipLocation_CS.Z += UStriderMath::GetPointOnPlane(NewTipLocation_CS, CurrentSlopeNormal, CurrentSlopePoint);
 			TipTransform_CS.SetLocation(NewTipLocation_CS);
 			Limb.TipLocation_CS = NewTipLocation_CS;
@@ -168,7 +168,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 		}
 		else
 		{
-			FVector TipLocation_Local = Output.Pose.GetLocalSpaceTransform(Limb.IkTarget.CachedCompactPoseIndex).GetLocation();
+			FVector TipLocation_Local = TipTransform_Local.GetLocation();
 			NewTipLocation_CS = IkRootTransform_CS.TransformPosition(TipLocation_Local);
 
 			AverageHorizontalShift += NewTipLocation_CS - Limb.TipLocation_CS;
@@ -203,6 +203,15 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 
 	//Apply hip shift to the hip transform
 	HipTransform_CS.AddToTranslation(LastHipShift);
+
+	//Adjust any additional bones along with the hips
+	for (FBoneReference& Bone : AdditionalBonesToAdjustWithHips)
+	{
+		FTransform BoneTransform_CS = Output.Pose.GetComponentSpaceTransform(Bone.CachedCompactPoseIndex);
+
+		BoneTransform_CS.SetLocation(BoneTransform_CS.GetLocation() + LastHipShift);
+		OutBoneTransforms.Add(FBoneTransform(Bone.CachedCompactPoseIndex, BoneTransform_CS));
+	}
 
 #if ENABLE_ANIM_DEBUG && ENABLE_DRAW_DEBUG
 	if (DebugLevel > 2)
@@ -274,7 +283,7 @@ void FAnimNode_SlopeWarp::UpdateInternal(const FAnimationUpdateContext& Context)
 	FAnimNode_SkeletalControlBase::UpdateInternal(Context);
 	DeltaTime = Context.GetDeltaTime();
 
-	//Clamp the slope if it beyond 60 degrees (Use a fast cheety method)
+	//Clamp the slope if it is beyond max slope degrees (Use a fast cheety method)
 	SlopeNormal.Normalize();
 	float SlopeAngle = FMath::Abs(UStriderMath::AngleBetween(FVector::UpVector, SlopeNormal));
 	if (SlopeAngle > MaxSlopeAngle)
@@ -367,6 +376,16 @@ void FAnimNode_SlopeWarp::InitializeBoneReferences(const FBoneContainer& Require
 		}
 	}
 
+	for (FBoneReference& Bone : AdditionalBonesToAdjustWithHips)
+	{
+		Bone.Initialize(RequiredBones);
+
+		if (!Bone.IsValidToEvaluate(RequiredBones))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Slope Warp Anim Node: Invalid 'additional bone' found in setup, this bone will not be affected,"))
+		}
+	}
+
 	bValidCheckResult = HipAdjustment.IsValid(RequiredBones) 
 		&& IkRoot.IsValidToEvaluate(RequiredBones)
 		&& bLimbsValid;	
@@ -374,9 +393,19 @@ void FAnimNode_SlopeWarp::InitializeBoneReferences(const FBoneContainer& Require
 	if(bValidCheckResult)
 	{
 		const TArray<FTransform>& Transforms = AnimInstanceProxy->GetSkeleton()->GetRefLocalPoses();
-		IKRootOffset = Transforms[IkRoot.BoneIndex].GetRotation();
-
 		FCompactPoseBoneIndex ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(IkRoot.CachedCompactPoseIndex);
+		
+		/*IKRootOffset = Transforms[ParentBoneCompactIndex.GetInt()].GetRotation();
+		ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(ParentBoneCompactIndex);
+
+		while (ParentBoneCompactIndex.GetInt() > -1)
+		{
+			IKRootOffset *= Transforms[ParentBoneCompactIndex.GetInt()].GetRotation();
+			ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(ParentBoneCompactIndex);
+		}*/
+
+
+		IKRootOffset = Transforms[IkRoot.BoneIndex].GetRotation();
 		int32 BoneIndex = ParentBoneCompactIndex.GetInt();
 		while (BoneIndex > -1)
 		{

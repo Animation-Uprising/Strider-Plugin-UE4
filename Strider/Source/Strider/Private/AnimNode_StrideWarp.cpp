@@ -129,7 +129,6 @@ void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output,
 		}
 #endif
 		
-
 		//Scale foot position Y component value in the StridePivotSpace (SPS)
 		float MaxLimbLength = (TipLocation_CS - BaseBoneLocation_CS).Size();
 		MaxLimbLength += AllowExtensionPercent * (Limb.Length - MaxLimbLength);
@@ -155,7 +154,7 @@ void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output,
 	}
 
 	//*****************************************************************************************************
-	//***** Stage 3: Update the Hip Spring to pull the hips down so that the character isn't floating *****
+	//***** Stage 3: Pull the hips down so that the character isn't floating *****
 	//*****************************************************************************************************
 	// Clamp HipAdjust upon recovery
 	float HipShift = -HighestTipZDelta * HipAdjustment.AdjustmentRatio;
@@ -171,6 +170,15 @@ void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output,
 
 	HipTransform_CS.SetLocation(NewHipLocation_CS);
 	OutBoneTransforms.Add(FBoneTransform(HipAdjustment.Hips.CachedCompactPoseIndex, HipTransform_CS));
+
+	//Adjust any additional bones set
+	for (FBoneReference& Bone : AdditionalBonesToAdjustWithHips)
+	{
+		FTransform BoneTransform_CS = Output.Pose.GetComponentSpaceTransform(Bone.CachedCompactPoseIndex);
+
+		BoneTransform_CS.SetLocation(BoneTransform_CS.GetLocation() + HipAdjust);
+		OutBoneTransforms.Add(FBoneTransform(Bone.CachedCompactPoseIndex, BoneTransform_CS));
+	}
 
 #if ENABLE_ANIM_DEBUG && ENABLE_DRAW_DEBUG
 	if (DebugLevel > 1)
@@ -285,6 +293,16 @@ void FAnimNode_StrideWarp::InitializeBoneReferences(const FBoneContainer& Requir
 		bStrideWarpSetupValid = false;
 	}
 
+	for (FBoneReference& Bone : AdditionalBonesToAdjustWithHips)
+	{
+		Bone.Initialize(RequiredBones);
+
+		if (!Bone.IsValidToEvaluate(RequiredBones))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Slope Warp Anim NOde: Invalid 'additional bone' found in setup, this bone will not be affected,"))
+		}
+	}
+
 	if (!HipAdjustment.IsValid(RequiredBones))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Stride Warp Anim Node: Hip/Pelvis setup is invalid, node will not take effect."))
@@ -309,6 +327,15 @@ bool FAnimNode_StrideWarp::CheckValidBones(const FBoneContainer& RequiredBones)
 	for (FLimbDefinition& LimbDef : Limbs)
 	{
 		if (!LimbDef.IsValid(RequiredBones))
+		{
+			bValidCheckResult = false;
+			break;
+		}
+	}
+
+	for (FBoneReference& Bone : AdditionalBonesToAdjustWithHips)
+	{
+		if (!Bone.IsValidToEvaluate(RequiredBones))
 		{
 			bValidCheckResult = false;
 			break;

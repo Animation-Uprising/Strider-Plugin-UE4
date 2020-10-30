@@ -48,6 +48,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = Bones)
 	TArray<FLimbDefinition> Limbs; 
 
+	/** List of additional bones to adjust along with the hips (often used for the IkRoot)*/
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = Bones)
+	TArray<FBoneReference> AdditionalBonesToAdjustWithHips; 
+
 private:
 	float LastHipShift;
 	float DeltaTime;

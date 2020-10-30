@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 1.3,
-	"VersionName": "Strider v1.3",
+	"Version": 1.6,
+	"VersionName": "Strider v1.6",
 	"EngineVersion" : "4.25.0",
 	"FriendlyName": "Strider",
 	"Description": "An animation plugin which provided procedural animation warping nodes to modify a character's stride and posture in certain situations.",
