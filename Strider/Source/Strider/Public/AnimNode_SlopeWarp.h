@@ -34,12 +34,12 @@ public:
 
 	/** The method used to detect the slope (the slope normal and slope point) */
 	UPROPERTY(EditAnywhere, Category = Settings)
-	TEnumAsByte<ESlopeDetectionMode> SlopeDetectionMode;
+	ESlopeDetectionMode SlopeDetectionMode;
 
 	/** How the slope warping should compensate for slope roll which can cause the character's lower body to
 	lean into the slope and hips to be off center from the feet. */
 	UPROPERTY(EditAnywhere, Category = Settings)
-	TEnumAsByte<ESlopeRollCompensation> SlopeRollCompensation;
+	ESlopeRollCompensation SlopeRollCompensation;
 
 	/** The maximum slope angle in degrees that slope warping will operate on */
 	UPROPERTY(EditAnywhere, Category = Settings)

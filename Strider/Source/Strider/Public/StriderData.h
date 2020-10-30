@@ -27,7 +27,7 @@ public:
 
 	/** The method of setting the stride scale. In most cases 'Manual' is the best option */
 	UPROPERTY(EditAnywhere, Category = Settings)
-	TEnumAsByte<EStrideVectorMethod> StrideVectorMethod;
+	EStrideVectorMethod StrideVectorMethod;
 
 	/** How smoothly the stride pivot should rotate to conform to direction changes (degrees / second) 
 	A negative value will default to no smoothing. */
