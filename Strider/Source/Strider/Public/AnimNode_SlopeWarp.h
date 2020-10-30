@@ -40,13 +40,10 @@ public:
 	lean into the slope and hips to be off center from the feet. */
 	UPROPERTY(EditAnywhere, Category = Settings)
 	ESlopeRollCompensation SlopeRollCompensation;
-<<<<<<< Updated upstream
-=======
 
 	/** The left vector of the IKRoot relative (Usually the X-Axis if setup with UE4 standard bone orientations).*/
 	UPROPERTY(EditAnywhere, Category = Settings)
 	FVector IKRootLeftVector;
->>>>>>> Stashed changes
 
 	/** The maximum slope angle in degrees that slope warping will operate on */
 	UPROPERTY(EditAnywhere, Category = Settings)
