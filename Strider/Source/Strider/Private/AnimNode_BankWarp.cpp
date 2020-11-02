@@ -57,6 +57,14 @@ void FAnimNode_BankWarp::Evaluate_AnyThread(FPoseContext & Output)
 		SpineChain.CalculateAnchorRotation(AnchorRotation_CS, Output.Pose);
 		SpineChain.ApplyComponentSpaceRotation(Output.Pose, AnchorRotation_CS,
 			UpAxis, TwistRad, 1.0f);
+
+		//TODO: This rotation is being done in local space. It may not adequately accommodate bones other than the IK root		
+		for (FBoneReference& Bone : RootBonesToAdjust)
+		{
+			FTransform& BoneTransform = Output.Pose[Bone.CachedCompactPoseIndex];
+			BoneTransform.SetRotation(BoneTransform.GetRotation() * FQuat(UpAxis, TwistRad));
+			BoneTransform.NormalizeRotation();
+		}
 	}
 	
 	if (MaxLean > 0.0001f)
@@ -77,6 +85,13 @@ void FAnimNode_BankWarp::CacheBones_AnyThread(const FAnimationCacheBonesContext&
 	const FBoneContainer& BoneContainer = Context.AnimInstanceProxy->GetRequiredBones();
 	RootBone.Initialize(BoneContainer);
 	SpineChain.Initialize(BoneContainer);
+
+	for (FBoneReference& Bone : RootBonesToAdjust)
+	{
+		Bone.Initialize(BoneContainer);
+	}
+
+
 	ValidateData(BoneContainer);
 }
 
@@ -100,12 +115,22 @@ void FAnimNode_BankWarp::GatherDebugData(FNodeDebugData& DebugData)
 {
 	DebugData.AddDebugItem(DebugData.GetNodeName(this));
 	InputPose.GatherDebugData(DebugData);
+
 }
 
 bool FAnimNode_BankWarp::ValidateData(const FBoneContainer& BoneContainer)
 {
 	bValidCheckResult = SpineChain.ValidateData(BoneContainer)
 		&& RootBone.IsValidToEvaluate(BoneContainer);
+
+	for (FBoneReference& Bone : RootBonesToAdjust)
+	{
+		if (!Bone.IsValidToEvaluate(BoneContainer))
+		{
+			bValidCheckResult = false;
+			UE_LOG(LogTemp, Warning, TEXT("Bank Warp Anim Node: Invalid 'additional bone' found in setup, Bank warping disabled."));
+		}
+	}
 
 	return bValidCheckResult;
 }

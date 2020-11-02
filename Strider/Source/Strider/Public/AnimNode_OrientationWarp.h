@@ -60,6 +60,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = BoneReference)
 	FBoneChain SpineChain;
 
+	/** List of additional bones to adjust with the torso twist. This is intended only for IkRoot type bones
+	which share the same orientation as the root bone. For example, rotating the IKHandRoot in opposition of 
+	the root rotation to ensure upper body IK nodes stay in line with the rotated upper torso.*/
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = BoneReference)
+	TArray<FBoneReference> RootBonesToCounterAdjust;
+
 private:
 	float CurrentDirection;
 	bool bValidCheckResult;

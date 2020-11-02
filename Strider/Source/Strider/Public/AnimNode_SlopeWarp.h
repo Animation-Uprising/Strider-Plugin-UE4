@@ -14,7 +14,6 @@
 #include "AnimNode_SlopeWarp.generated.h"
 
 
-
 /** A runtime animation node for warping character's legs to conform to a slope */
 USTRUCT(BlueprintInternalUseOnly)
 struct STRIDER_API FAnimNode_SlopeWarp : public FAnimNode_SkeletalControlBase

@@ -48,7 +48,7 @@ void FAnimNode_OrientationWarp::Evaluate_AnyThread(FPoseContext & Output)
 	//Rotate Root Bone around the Z axis by the current direction. (This will rotate the entire model)
 	FTransform& RootTransform = Output.Pose[RootBone.CachedCompactPoseIndex];
 	FQuat AnchorRotation_CS = RootTransform.GetRotation();
-	RootTransform.SetRotation(RootTransform.GetRotation() * FQuat(UpAxis, CurDirectionRad));
+	RootTransform.SetRotation(AnchorRotation_CS * FQuat(UpAxis, CurDirectionRad));
 	RootTransform.NormalizeRotation();
 
 	if ((UpperBodyAlpha < 0.0001f) 
@@ -60,6 +60,14 @@ void FAnimNode_OrientationWarp::Evaluate_AnyThread(FPoseContext & Output)
 	SpineChain.CalculateAnchorRotation(AnchorRotation_CS, Output.Pose);
 	SpineChain.ApplyComponentSpaceRotation(Output.Pose, AnchorRotation_CS, UpAxis, 
 		-CurDirectionRad, UpperBodyAlpha);
+
+	//TODO: This rotation is being done in local space. It may not adequately accommodate bones other than the IK root
+	for (FBoneReference& Bone : RootBonesToCounterAdjust)
+	{
+		FTransform& BoneTransform = Output.Pose[Bone.CachedCompactPoseIndex];
+		BoneTransform.SetRotation(BoneTransform.GetRotation() * FQuat(UpAxis, -CurDirectionRad));
+		RootTransform.NormalizeRotation();
+	}
 }
 
 void FAnimNode_OrientationWarp::CacheBones_AnyThread(const FAnimationCacheBonesContext & Context)
@@ -69,6 +77,13 @@ void FAnimNode_OrientationWarp::CacheBones_AnyThread(const FAnimationCacheBonesC
 	const FBoneContainer& BoneContainer = Context.AnimInstanceProxy->GetRequiredBones();
 	RootBone.Initialize(BoneContainer);
 	SpineChain.Initialize(BoneContainer);
+
+	for (FBoneReference& Bone : RootBonesToCounterAdjust)
+	{
+		Bone.Initialize(BoneContainer);
+	}
+
+
 	ValidateData(BoneContainer);
 }
 
@@ -100,6 +115,15 @@ bool FAnimNode_OrientationWarp::ValidateData(const FBoneContainer & BoneContaine
 {
 	bValidCheckResult = RootBone.IsValidToEvaluate(BoneContainer)
 		&& SpineChain.ValidateData(BoneContainer);
+
+	for (FBoneReference& Bone : RootBonesToCounterAdjust)
+	{
+		if (!Bone.IsValidToEvaluate(BoneContainer))
+		{
+			bValidCheckResult = false;
+			UE_LOG(LogTemp, Warning, TEXT("Orientation Warp Anim Node: Invalid 'additional bone' found in setup, orientation warping disabled."))
+		}
+	}
 
 	return bValidCheckResult;
 }

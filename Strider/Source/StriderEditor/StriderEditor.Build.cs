@@ -12,9 +12,6 @@ public class StriderEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-				"AnimGraph",
-				"AnimGraphRuntime",
-				"Strider",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -23,17 +20,12 @@ public class StriderEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
 				"CoreUObject",
 				"Engine",
-				"Slate",
-				"SlateCore",
 				"Strider",
 				"AnimGraph",
 				"BlueprintGraph",
 				"AnimGraphRuntime",
-				"Projects",
-				
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
