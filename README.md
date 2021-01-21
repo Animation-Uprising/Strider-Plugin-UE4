@@ -4,9 +4,10 @@ This is a private repository for verified users of the 'Strider Plugin' (UE4) to
 # Installation
 1. Close your project
 2. Right click on your .uproject file and choose "Generate Visual Studio Project Files"
-2. Clone the repository into your projects 'plugin' folder
-3. Open your project and recompile (you will be asked to recompile before opening the project)
-4. Enable the plugin in the UE4 editor and restart the editor when prompted
+3. Clone the repository into your projects 'plugin' folder
+4. Open your project and recompile (you will be asked to recompile before opening the project)
+5. Enable the plugin in the UE4 editor and restart the editor when prompted
+6. Depending on the version of UE4 you are using, you may need to modify the version in the .uplugin file within the plugin folder.
 
 # Licence
 The source code provided here is only for verified users who have purchased Strider on the Unreal Engine marketplace. The source code is copyrighted and must not be re-distributed without permision. Licencing is governed by the Unreal Engine marketplace as per the guidlines linked below (See section 4).
