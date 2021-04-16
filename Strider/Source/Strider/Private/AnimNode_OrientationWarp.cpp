@@ -40,8 +40,11 @@ void FAnimNode_OrientationWarp::Evaluate_AnyThread(FPoseContext & Output)
 		|| (Alpha < 0.0001f)
 		|| !FMath::IsFinite(CurrentDirection)
 		|| (FMath::Abs(CurrentDirection) < 0.0001f)
-		|| (CVarOrientWarpEnabled.GetValueOnAnyThread() == 0))
+		|| (CVarOrientWarpEnabled.GetValueOnAnyThread() == 0)
+		|| !IsLODEnabled(Output.AnimInstanceProxy))
+	{ 
 		return;
+	}
 
 	float CurDirectionRad = FMath::DegreesToRadians(CurrentDirection) * Alpha;
 

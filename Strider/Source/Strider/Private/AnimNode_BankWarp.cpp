@@ -39,7 +39,8 @@ void FAnimNode_BankWarp::Evaluate_AnyThread(FPoseContext & Output)
 		|| (Alpha < 0.0001f)
 		|| !FMath::IsFinite(CurrentBankValue)
 		|| (FMath::Abs(CurrentBankValue) < 0.0001f)
-		|| (CVarBankWarpEnabled.GetValueOnAnyThread() == 0))
+		|| (CVarBankWarpEnabled.GetValueOnAnyThread() == 0)
+		|| !IsLODEnabled(Output.AnimInstanceProxy))
 	{
 		return;
 	}

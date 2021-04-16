@@ -17,7 +17,7 @@ public:
 	FPoseLink InputPose;
 
 	/** The direction (in degrees) to re-orient the character */
-	UPROPERTY(EditAnywhere, Category = Input, meta = (AlwaysAsPin, ClampMin = -180.0f, ClampMax = 180.0f))
+	UPROPERTY(EditAnywhere, Category = Input, meta = (PinShownByDefault, ClampMin = -180.0f, ClampMax = 180.0f))
 	float Direction;
 
 	/** An offset for the direction. Use this when orientation warping animations that are already not

@@ -133,7 +133,18 @@ float UStriderMath::GetRotationRelativeToVelocity(const AActor* Actor)
 	if (Velocity.SizeSquared() < 0.0001f)
 		return 0.0f;
 
-	return (Actor->GetActorRotation() - Velocity.ToOrientationRotator()).Yaw * -1.0f;
+	float RotationZ = (Actor->GetActorRotation() - Velocity.ToOrientationRotator()).Yaw * -1.0f;
+
+	if(RotationZ > 180.0f)
+	{
+		RotationZ -= 360.0f;
+	}
+	else if(RotationZ < -180.0f)
+	{
+		RotationZ += 360.0f;
+	}
+
+	return RotationZ;
 }
 
 int UStriderMath::GetNextCardinalDirection(const int CurrentCardinalDirection, const float RelativeDirection,

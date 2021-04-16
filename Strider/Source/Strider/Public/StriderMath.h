@@ -61,7 +61,7 @@ public:
 	static float GetRotationRelativeToVelocity(const AActor* Actor);
 
 	/** Given an input Cardinal Direction, 0-N, 1-E, 2-S, 3-W, and the relative direction, this function
-	determines which cardinal direction to switch to*/
+	determines which cardinal direction to switch to. Note: This function expectes the RelativeDirection to be within the range -180 to 180 degrees*/
 	UFUNCTION(BlueprintCallable, Category = "Animation Warping Utility")
 	static int GetNextCardinalDirection(const int CurrentCardinalDirection, const float RelativeDirection,
 			const float StepDelta = 60.0f, const float SkipDelta = 135.0f);

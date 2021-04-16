@@ -264,7 +264,8 @@ bool FAnimNode_SlopeWarp::IsValidToEvaluate(const USkeleton* Skeleton, const FBo
 {
 	return bValidCheckResult
 		   && (Alpha > 0.00001f)
-		   && (CVarSlopeWarpEnabled.GetValueOnAnyThread() == 1);
+		   && (CVarSlopeWarpEnabled.GetValueOnAnyThread() == 1)
+		   && IsLODEnabled(AnimInstanceProxy);
 }
 
 void FAnimNode_SlopeWarp::Initialize_AnyThread(const FAnimationInitializeContext& Context)
@@ -394,18 +395,10 @@ void FAnimNode_SlopeWarp::InitializeBoneReferences(const FBoneContainer& Require
 	{
 		const TArray<FTransform>& Transforms = AnimInstanceProxy->GetSkeleton()->GetRefLocalPoses();
 		FCompactPoseBoneIndex ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(IkRoot.CachedCompactPoseIndex);
-		
-		/*IKRootOffset = Transforms[ParentBoneCompactIndex.GetInt()].GetRotation();
-		ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(ParentBoneCompactIndex);
 
-		while (ParentBoneCompactIndex.GetInt() > -1)
-		{
-			IKRootOffset *= Transforms[ParentBoneCompactIndex.GetInt()].GetRotation();
-			ParentBoneCompactIndex = RequiredBones.GetParentBoneIndex(ParentBoneCompactIndex);
-		}*/
+		const int32 IkRootBoneIndex = AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(IkRoot.BoneName);
 
-
-		IKRootOffset = Transforms[IkRoot.BoneIndex].GetRotation();
+		IKRootOffset = Transforms[IkRootBoneIndex].GetRotation();
 		int32 BoneIndex = ParentBoneCompactIndex.GetInt();
 		while (BoneIndex > -1)
 		{

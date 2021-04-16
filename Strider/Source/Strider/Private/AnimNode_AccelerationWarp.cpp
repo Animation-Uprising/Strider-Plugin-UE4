@@ -38,8 +38,8 @@ void FAnimNode_AccelerationWarp::Evaluate_AnyThread(FPoseContext & Output)
 		|| (Alpha < 0.0001f)
 		|| !FMath::IsFinite(CurrentAcceleration)
 		|| (FMath::Abs(CurrentAcceleration) < 0.0001f)
-		|| (SpineChain.BoneChain.Num() == 0)
-		|| (CVarAccelWarpEnabled.GetValueOnAnyThread() == 0))
+		|| (CVarAccelWarpEnabled.GetValueOnAnyThread() == 0)
+		|| !IsLODEnabled(Output.AnimInstanceProxy))
 	{
 		return;
 	}

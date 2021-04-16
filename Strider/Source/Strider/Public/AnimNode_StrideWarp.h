@@ -20,7 +20,7 @@ struct STRIDER_API FAnimNode_StrideWarp : public FAnimNode_SkeletalControlBase
 public:
 	/** The amount of scaling to apply to the stride. A value of 1 will produce a normal animation, values < 1 will
 	cause the stride to become smaller and values > 1 will cause the stride to become larger. */
-	UPROPERTY(EditAnywhere, Category = Inputs, meta = (AlwaysAsPin, ClampMin = 0.0f))
+	UPROPERTY(EditAnywhere, Category = Inputs, meta = (PinHiddenByDefault, ClampMin = 0.0f))
 	float StrideScale;
 
 	/** The direction (in degrees) to scale the stride in. This could be your blend space or orientation warping direction */

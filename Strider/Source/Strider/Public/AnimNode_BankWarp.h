@@ -18,7 +18,7 @@ public:
 
 	/** The amount of banking (turning) the character is currently performing.
 	Left is -ve and Right is +ve */
-	UPROPERTY(EditAnywhere, Category = Inputs, meta = (AlwaysAsPin))
+	UPROPERTY(EditAnywhere, Category = Inputs, meta = (PinShownByDefault))
 	float BankValue;
 
 	/** The alpha (or weight) of this node */

@@ -17,7 +17,7 @@ public:
 	FPoseLink InputPose;
 
 	/** The current acceleration magnitude to warp with (can be negative for deceleration) */
-	UPROPERTY(EditAnywhere, Category = Input, meta = (AlwaysAsPin))
+	UPROPERTY(EditAnywhere, Category = Input, meta = (PinShownByDefault))
 	float Acceleration;
 
 	/** The direction of acceleration in degrees around the Z-axis (Up-Axis) */

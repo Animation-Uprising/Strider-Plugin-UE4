@@ -224,7 +224,8 @@ bool FAnimNode_StrideWarp::IsValidToEvaluate(const USkeleton* Skeleton, const FB
 {
 	return CheckValidBones(RequiredBones)
 		   && Alpha > 0.00001f
-		   && (CVarStrideWarpEnabled.GetValueOnAnyThread() == 1);
+		   && (CVarStrideWarpEnabled.GetValueOnAnyThread() == 1)
+		   && IsLODEnabled(AnimInstanceProxy);
 }
 
 void FAnimNode_StrideWarp::Initialize_AnyThread(const FAnimationInitializeContext& Context)
