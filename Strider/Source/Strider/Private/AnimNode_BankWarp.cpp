@@ -52,8 +52,8 @@ void FAnimNode_BankWarp::Evaluate_AnyThread(FPoseContext & Output)
 	if ((MaxTwist > 0.0001f)
 		&& SpineChain.BoneChain.Num() > 0)
 	{
-		float TwistRad = FMath::DegreesToRadians(FMath::Clamp(TwistRate * CurrentBankValue,
-			-MaxTwist, MaxTwist) * Alpha);
+		const float TwistRad = FMath::DegreesToRadians(FMath::Clamp(TwistRate * CurrentBankValue,
+		                                                            -MaxTwist, MaxTwist) * Alpha);
 
 		SpineChain.CalculateAnchorRotation(AnchorRotation_CS, Output.Pose);
 		SpineChain.ApplyComponentSpaceRotation(Output.Pose, AnchorRotation_CS,
@@ -71,8 +71,8 @@ void FAnimNode_BankWarp::Evaluate_AnyThread(FPoseContext & Output)
 	if (MaxLean > 0.0001f)
 	{
 		//Lean Second
-		float LeanRad = FMath::DegreesToRadians(FMath::Clamp(LeanRate * CurrentBankValue,
-			-MaxLean, MaxLean) * Alpha);
+		const float LeanRad = FMath::DegreesToRadians(FMath::Clamp(LeanRate * CurrentBankValue,
+		                                                           -MaxLean, MaxLean) * Alpha);
 
 		RootTransform.ConcatenateRotation(FQuat(ForwardAxis, LeanRad));
 		RootTransform.NormalizeRotation();

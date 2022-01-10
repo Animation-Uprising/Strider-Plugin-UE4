@@ -46,7 +46,7 @@ void FAnimNode_OrientationWarp::Evaluate_AnyThread(FPoseContext & Output)
 		return;
 	}
 
-	float CurDirectionRad = FMath::DegreesToRadians(CurrentDirection) * Alpha;
+	const float CurDirectionRad = FMath::DegreesToRadians(CurrentDirection) * Alpha;
 
 	//Rotate Root Bone around the Z axis by the current direction. (This will rotate the entire model)
 	FTransform& RootTransform = Output.Pose[RootBone.CachedCompactPoseIndex];

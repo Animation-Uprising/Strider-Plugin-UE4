@@ -1,6 +1,7 @@
 // Copyright 2020 Kenneth Claassen, All Rights Reserved.
 #include "StriderData.h"
 #include "StriderMath.h"
+#include "BoneControllers/AnimNode_SkeletalControlBase.h"
 
 FStridePivot::FStridePivot()
 	: bProjectToGround(false),
@@ -30,7 +31,7 @@ FQuat FStridePivot::GetDirectionRotation(float Direction, const float DeltaTime)
 	//Choose nearest axis (i.e. the direction isn't so important it's more the axis of the direction)
 	if (bChooseNearestAxis)
 	{
-		float AltDirection = Direction - FMath::Sign(Direction) * 180.0f;
+		const float AltDirection = Direction - FMath::Sign(Direction) * 180.0f;
 
 		if (FMath::Abs(AltDirection - CurrentDirection)
 			< FMath::Abs(Direction - CurrentDirection))
@@ -134,4 +135,89 @@ void FLimbDefinition::CalculateLength(FCSPose<FCompactPose>& Pose)
 	{
 		Length += Pose.GetLocalSpaceTransform(Bones[i].CachedCompactPoseIndex).GetLocation().Size();
 	}
+}
+
+FFootLockLimbDefinition::FFootLockLimbDefinition()
+	: LimbBoneCount(2),
+	LengthSqr(-1.0f),
+	Length(-1.0f),
+	HeightDelta(0.0f),
+	ToeLocation_LS(FVector::ZeroVector),
+	ToeLocation_CS(FVector::ZeroVector),
+	FootLocation_CS(FVector::ZeroVector),
+	BaseBoneTransform_CS(FTransform::Identity)
+{
+}
+
+void FFootLockLimbDefinition::Initialize(const FBoneContainer& PoseBones, const FAnimInstanceProxy* InAnimInstanceProxy)
+{
+	Length = -1.0f;
+
+	//Initialize set bones
+	FootBone.Initialize(PoseBones);
+	ToeBone.Initialize(PoseBones);
+	IkTarget.Initialize(PoseBones);
+
+	Bones.Empty(LimbBoneCount);
+
+	if (!FootBone.IsValidToEvaluate(PoseBones))
+	{
+		return;
+	}
+
+	const FReferenceSkeleton& RefSkeleton = PoseBones.GetReferenceSkeleton();
+
+	int32 ParentBoneIndex = PoseBones.GetParentBoneIndex(FootBone.BoneIndex);
+	for (int32 i = 0; i < LimbBoneCount; ++i)
+	{
+		if(ParentBoneIndex == 0)
+		{
+			break;
+		}
+
+		FBoneReference Bone = FBoneReference(RefSkeleton.GetBoneName(ParentBoneIndex));
+		Bone.Initialize(PoseBones);
+		Bones.Add(Bone);
+
+		ParentBoneIndex = PoseBones.GetParentBoneIndex(ParentBoneIndex);
+	}
+}
+
+bool FFootLockLimbDefinition::IsValid(const FBoneContainer& PoseBones)
+{
+	bool bIsValid = FootBone.IsValidToEvaluate(PoseBones)
+		&& ToeBone.IsValidToEvaluate(PoseBones)
+		&& IkTarget.IsValidToEvaluate(PoseBones)
+		&& (Bones.Num() == LimbBoneCount)
+		&& (LimbBoneCount > 1);
+
+	for(FBoneReference& Bone : Bones)
+	{
+		if (!Bone.IsValidToEvaluate(PoseBones))
+		{
+			bIsValid = false;
+			break;
+		}
+	}
+
+	return bIsValid;
+}
+
+void FFootLockLimbDefinition::CalculateLength(FCSPose<FCompactPose>& Pose)
+{
+	//Length from foot to previous bone hinge
+	Length = Pose.GetLocalSpaceTransform(FootBone.CachedCompactPoseIndex).GetLocation().Size();
+
+	//Length from subsequent bones to their previous bone up the chain (Base bone excluded)
+	for (int32 i = 0; i < LimbBoneCount - 1; ++i)
+	{
+		Length += Pose.GetLocalSpaceTransform(Bones[i].CachedCompactPoseIndex).GetLocation().Size();
+	}
+	
+	LengthSqr = Length * Length;
+}
+
+void FFootLockLimbDefinition::CalculateFootToToeOffset(FCSPose<FCompactPose>& Pose)
+{
+	ToeLocation_LS = Pose.GetLocalSpaceTransform(ToeBone.CachedCompactPoseIndex).GetLocation();
 }

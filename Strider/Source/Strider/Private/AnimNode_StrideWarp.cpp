@@ -1,7 +1,6 @@
 // Copyright 2020 Kenneth Claassen, All Rights Reserved.
 
 #include "AnimNode_StrideWarp.h"
-#include "GameFramework/WorldSettings.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "DrawDebugHelpers.h"
 #include "StriderMath.h"
@@ -44,7 +43,9 @@ void FAnimNode_StrideWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePose
 	OutBoneTransforms.Sort(FCompareBoneTransformIndex());
 
 	if (Alpha < 1.0f)
+	{
 		Output.Pose.LocalBlendCSBoneTransforms(OutBoneTransforms, Alpha);
+	}
 }
 
 void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output, 
@@ -115,7 +116,9 @@ void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output,
 
 		//Limb Length
 		if (Limb.Length < 0.0f)
+		{
 			Limb.CalculateLength(Output.Pose);
+		}
 
 #if ENABLE_ANIM_DEBUG && ENABLE_DRAW_DEBUG
 		if (DebugLevel > 1)
@@ -150,7 +153,9 @@ void FAnimNode_StrideWarp::EvaluateStride(FComponentSpacePoseContext& Output,
 		Limb.HeightDelta = Limb.TipLocation_CS.Z - TipLocation_CS.Z;
 
 		if (Limb.HeightDelta > HighestTipZDelta)
+		{
 			HighestTipZDelta = Limb.HeightDelta;
+		}
 	}
 
 	//*****************************************************************************************************
