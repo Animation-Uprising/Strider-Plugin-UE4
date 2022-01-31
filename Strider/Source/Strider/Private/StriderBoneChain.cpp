@@ -1,23 +1,23 @@
 // Copyright 2020 Kenneth Claassen, All Rights Reserved.
-#include "BoneChain.h"
+#include "StriderBoneChain.h"
 
 FBoneChainLink::FBoneChainLink()
 	: Weight(1.0f), NormalizedWeight(1.0f)
 {
 }
 
-FBoneChain::FBoneChain()
+FStriderBoneChain::FStriderBoneChain()
 {
 }
 
-void FBoneChain::Initialize(const FBoneContainer& BoneContainer)
+void FStriderBoneChain::Initialize(const FBoneContainer& BoneContainer)
 {
 	InitializeBoneChain(BoneContainer);
 	ValidateData(BoneContainer);
 	InitializeRootToAnchorHierarchy(BoneContainer);
 }
 
-bool FBoneChain::ValidateData(const FBoneContainer& BoneContainer)
+bool FStriderBoneChain::ValidateData(const FBoneContainer& BoneContainer)
 {
 	if (BoneChain.Num() == 0)
 		return false;
@@ -31,7 +31,7 @@ bool FBoneChain::ValidateData(const FBoneContainer& BoneContainer)
 	return true;
 }
 
-void FBoneChain::CalculateAnchorRotation(FQuat& OutAnchorRotation_CS, const FCompactPose& CompactPose)
+void FStriderBoneChain::CalculateAnchorRotation(FQuat& OutAnchorRotation_CS, const FCompactPose& CompactPose)
 {
 	//Accumulate rotations until the anchor is reached to find the Anchor 'component space' transform
 	//This avoids having to convert the entire pose to component space
@@ -41,7 +41,7 @@ void FBoneChain::CalculateAnchorRotation(FQuat& OutAnchorRotation_CS, const FCom
 	}
 }
 
-void FBoneChain::ApplyComponentSpaceRotation(FCompactPose& CompactPose, FQuat& AnchorRotation_CS,
+void FStriderBoneChain::ApplyComponentSpaceRotation(FCompactPose& CompactPose, FQuat& AnchorRotation_CS,
 	FVector Axis, float Angle /*Radians*/, float Alpha /*= 1.0f*/)
 {
 	//Iterate through each link bone in the bone chain and apply a proportion of the rotation
@@ -62,7 +62,7 @@ void FBoneChain::ApplyComponentSpaceRotation(FCompactPose& CompactPose, FQuat& A
 	}
 }
 
-void FBoneChain::InitializeBoneChain(const FBoneContainer& BoneContainer)
+void FStriderBoneChain::InitializeBoneChain(const FBoneContainer& BoneContainer)
 {
 	float AccumulatedNegativeWeight = 0.0f;
 	float AccumulatedPositiveWeight = 0.0f;
@@ -97,7 +97,7 @@ void FBoneChain::InitializeBoneChain(const FBoneContainer& BoneContainer)
 	}
 }
 
-void FBoneChain::InitializeRootToAnchorHierarchy(const FBoneContainer& BoneContainer)
+void FStriderBoneChain::InitializeRootToAnchorHierarchy(const FBoneContainer& BoneContainer)
 {
 	
 	if (BoneChain.Num() > 0)

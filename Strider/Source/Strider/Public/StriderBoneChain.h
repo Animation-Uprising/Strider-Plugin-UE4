@@ -5,7 +5,7 @@
 #include "BoneContainer.h"
 #include "BonePose.h"
 #include "EStriderEnumerations.h"
-#include "BoneChain.generated.h"
+#include "StriderBoneChain.generated.h"
 
 /** A data structure representing a single bone in a bone chain */
 USTRUCT(BlueprintType)
@@ -30,7 +30,7 @@ public:
 
 /** A data structure representing a bone chain in a local space pose */
 USTRUCT(BlueprintType)
-struct FBoneChain
+struct FStriderBoneChain
 {
 	GENERATED_BODY()
 
@@ -42,7 +42,7 @@ public:
 	TArray<FCompactPoseBoneIndex> RootToAnchorBoneIndexHierarchy;
 
 public:
-	FBoneChain();
+	FStriderBoneChain();
 	void Initialize(const FBoneContainer& BoneContainer);
 	bool ValidateData(const FBoneContainer& BoneContainer);
 

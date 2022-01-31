@@ -3,7 +3,7 @@
 
 #include "Animation/AnimNodeBase.h"
 #include "BoneContainer.h"
-#include "BoneChain.h"
+#include "StriderBoneChain.h"
 #include "AnimNode_OrientationWarp.generated.h"
 
 /** A runtime animation node for warping a characters orientation */
@@ -58,7 +58,7 @@ public:
 	rotated counter to the warp direction based on their individual weights, so that the 
 	character still faces forward*/
 	UPROPERTY(EditAnywhere, Category = BoneReference)
-	FBoneChain SpineChain;
+	FStriderBoneChain SpineChain;
 
 	/** List of additional bones to adjust with the torso twist. This is intended only for IkRoot type bones
 	which share the same orientation as the root bone. For example, rotating the IKHandRoot in opposition of 

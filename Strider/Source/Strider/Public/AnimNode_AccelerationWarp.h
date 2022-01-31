@@ -3,7 +3,7 @@
 
 #include "Animation/AnimNodeBase.h"
 #include "BoneContainer.h"
-#include "BoneChain.h"
+#include "StriderBoneChain.h"
 #include "AnimNode_AccelerationWarp.generated.h"
 
 /** A runtime animation node for warping a character's upper body based on acceleration */
@@ -47,7 +47,7 @@ public:
 
 	/** A bone chain representing the spine of the character. */
 	UPROPERTY(EditAnywhere, Category = BoneReference)
-	FBoneChain SpineChain;
+	FStriderBoneChain SpineChain;
 
 private:
 	float CurrentAcceleration;

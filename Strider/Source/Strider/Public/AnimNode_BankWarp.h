@@ -3,7 +3,7 @@
 
 #include "Animation/AnimNodeBase.h"
 #include "BoneContainer.h"
-#include "BoneChain.h"
+#include "StriderBoneChain.h"
 #include "AnimNode_BankWarp.generated.h"
 
 /** A runtime animation node for warping a character's pose based on banking input */
@@ -60,7 +60,7 @@ public:
 
 	/** A chain of weighted bones representing the spine of the character (spine-01 to head) */
 	UPROPERTY(EditAnywhere, Category = BoneReference)
-	FBoneChain SpineChain;
+	FStriderBoneChain SpineChain;
 
 	/** List of additional bones to adjust with the torso twist. This is intended only for IkRoot type bones
 	which share the same orientation as the root bone. For example, rotating the IKHandRoot with the  
