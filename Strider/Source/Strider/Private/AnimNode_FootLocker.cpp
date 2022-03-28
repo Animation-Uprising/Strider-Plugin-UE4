@@ -140,14 +140,15 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 			
 			switch(LegHyperExtensionFixMethod)
 			{
-			 default:
-			 case EHyperExtensionFixMethod::MoveFootTowardsThigh:
+				case EHyperExtensionFixMethod::None: break;
+
+				case EHyperExtensionFixMethod::MoveFootTowardsThigh:
 			 	{
 			 		FVector ThighToLockVector_CS = LeftLockLocation_CS - LeftThighLocation_CS;
 			 		LeftLockLocation_CS = LeftThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
 			 	} break;
 			
-			 case EHyperExtensionFixMethod::MoveFootUnderThigh:
+				case EHyperExtensionFixMethod::MoveFootUnderThigh:
 			 	{
 			 		const FVector FootShiftVector = LeftLockLocation_CS - FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z);
 					const float ThighHeight = LeftThighLocation_CS.Z - LeftLockLocation_CS.Z/* - DesiredHipAdjust*/;
@@ -164,6 +165,7 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 			 		LeftLockLocation_CS = FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
 			 		 
 			 	} break;
+				default: break;
 			}
 				
 			WeightedLeftLockPosition_CS = FMath::Lerp(LeftFootLocation_CS, LeftLockLocation_CS, LeftFootLockWeight);

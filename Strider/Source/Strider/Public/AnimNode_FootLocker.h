@@ -11,6 +11,7 @@
 UENUM()
 enum class EHyperExtensionFixMethod : uint8
 {
+	None,
 	MoveFootTowardsThigh,
 	MoveFootUnderThigh
 };
