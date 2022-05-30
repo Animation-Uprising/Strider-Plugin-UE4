@@ -119,56 +119,63 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 
 		FVector WeightedLeftLockPosition_CS = FMath::Lerp(LeftFootLocation_CS, LeftLockLocation_CS, LeftFootLockWeight);
 
-		//Calculate the left leg length if it has not already been done
-		if(LeftFootDefinition.Length < 0.0f)
+		if(LegHyperExtensionFixMethod != EHyperExtensionFixMethod::None)
 		{
-			LeftFootDefinition.CalculateLength(Output.Pose);
-		}
-
-		//Determine whether the leg is hyper-extended or not.
-		const FTransform LeftThighTransform_CS = Output.Pose.GetComponentSpaceTransform(LeftFootDefinition.Bones.Last().CachedCompactPoseIndex);
-		const FVector LeftThighLocation_CS = LeftThighTransform_CS.GetLocation();
-		
-		const float StartingLegLength = FVector::Distance(LeftThighLocation_CS, LeftFootLocation_CS);
-		const float MaxAllowableLegLength = StartingLegLength + ((LeftFootDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
-		const float LockedLegLength = FVector::Distance(LeftThighLocation_CS, LeftLockLocation_CS);
-
-		//Adjust the legs to avoid hyper-extension
-		if(LockedLegLength > MaxAllowableLegLength)
-		{
-			float ThighToLockDist_XY = FVector2D::Distance(FVector2D(LeftThighLocation_CS.X, LeftThighLocation_CS.Y), FVector2D(LeftLockLocation_CS.X, LeftLockLocation_CS.Y));
-			
-			switch(LegHyperExtensionFixMethod)
+			//Calculate the left leg length if it has not already been done
+			if(LeftFootDefinition.Length < 0.0f)
 			{
+				LeftFootDefinition.CalculateLength(Output.Pose);
+			}
+
+			//Determine whether the leg is hyper-extended or not.
+			const FTransform LeftThighTransform_CS = Output.Pose.GetComponentSpaceTransform(LeftFootDefinition.Bones.Last().CachedCompactPoseIndex);
+			const FVector LeftThighLocation_CS = LeftThighTransform_CS.GetLocation();
+		
+			const float StartingLegLength = FVector::Distance(LeftThighLocation_CS, LeftFootLocation_CS);
+			const float MaxAllowableLegLength = StartingLegLength + ((LeftFootDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
+			const float LockedLegLength = FVector::Distance(LeftThighLocation_CS, LeftLockLocation_CS);
+
+			//Adjust the legs to avoid hyper-extension
+			if(LockedLegLength > MaxAllowableLegLength)
+			{
+				float ThighToLockDist_XY = FVector2D::Distance(FVector2D(LeftThighLocation_CS.X, LeftThighLocation_CS.Y), FVector2D(LeftLockLocation_CS.X, LeftLockLocation_CS.Y));
+			
+				switch(LegHyperExtensionFixMethod)
+				{
 				case EHyperExtensionFixMethod::None: break;
 
 				case EHyperExtensionFixMethod::MoveFootTowardsThigh:
-			 	{
-			 		FVector ThighToLockVector_CS = LeftLockLocation_CS - LeftThighLocation_CS;
-			 		LeftLockLocation_CS = LeftThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
-			 	} break;
+					{
+						FVector ThighToLockVector_CS = LeftLockLocation_CS - LeftThighLocation_CS;
+						LeftLockLocation_CS = LeftThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
+					} break;
 			
 				case EHyperExtensionFixMethod::MoveFootUnderThigh:
-			 	{
-			 		const FVector FootShiftVector = LeftLockLocation_CS - FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z);
-					const float ThighHeight = LeftThighLocation_CS.Z - LeftLockLocation_CS.Z/* - DesiredHipAdjust*/;
+					{
+						const FVector FootShiftVector = LeftLockLocation_CS - FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z);
+						const float ThighHeight = LeftThighLocation_CS.Z - LeftLockLocation_CS.Z/* - DesiredHipAdjust*/;
 
-			 		if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
-			 		{
-			 			ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
-			 		}
-			        else
-			        {
-				        ThighToLockDist_XY = 0.0f;
-			        }
-			 		
-			 		LeftLockLocation_CS = FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
-			 		 
-			 	} break;
+						if(FMath::IsNearlyZero(FootShiftVector.SizeSquared())) //Edge case where the foot is directly below thigh joint.
+						{
+							LeftLockLocation_CS = WeightedLeftLockPosition_CS;
+						}
+						else if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
+						{
+							ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
+							LeftLockLocation_CS = FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+						else
+						{
+							ThighToLockDist_XY = 0.0f;
+							LeftLockLocation_CS = FVector(LeftThighLocation_CS.X, LeftThighLocation_CS.Y, LeftLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+						
+					} break;
 				default: break;
-			}
+				}
 				
-			WeightedLeftLockPosition_CS = FMath::Lerp(LeftFootLocation_CS, LeftLockLocation_CS, LeftFootLockWeight);
+				WeightedLeftLockPosition_CS = FMath::Lerp(LeftFootLocation_CS, LeftLockLocation_CS, LeftFootLockWeight);
+			}
 		}
 		
 		//Set the location of the left foot Transform to the WS lock position but with the toe offset and weighted lerp
@@ -269,54 +276,62 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 
 		FVector WeightedRightLockPosition_CS = FMath::Lerp(RightFootLocation_CS, RightLockLocation_CS, RightFootLockWeight);
 
-		//Calculate the leg length if it has not already been done
-		if(RightFootDefinition.Length < 0.0f)
-		{
-			RightFootDefinition.CalculateLength(Output.Pose);
-		}
 
-		//Determine whether the leg is hyper-extended or not.
-		const FTransform RightThighTransform_CS = Output.Pose.GetComponentSpaceTransform(RightFootDefinition.Bones.Last().CachedCompactPoseIndex);
-		const FVector RightThighLocation_CS = RightThighTransform_CS.GetLocation();
-		
-		const float StartingLegLength = FVector::Distance(RightThighLocation_CS, RightFootLocation_CS);
-		const float MaxAllowableLegLength = StartingLegLength + ((RightFootDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
-		const float LockedLegLength = FVector::Distance(RightThighLocation_CS, RightLockLocation_CS);
-
-		//Adjust the legs to avoid hyper-extension
-		if(LockedLegLength > MaxAllowableLegLength)
+		if(LegHyperExtensionFixMethod != EHyperExtensionFixMethod::None)
 		{
-			float ThighToLockDist_XY = FVector2D::Distance(FVector2D(RightThighLocation_CS.X, RightThighLocation_CS.Y), FVector2D(RightLockLocation_CS.X, RightLockLocation_CS.Y));
-			
-			switch(LegHyperExtensionFixMethod)
+			//Calculate the leg length if it has not already been done
+			if(RightFootDefinition.Length < 0.0f)
 			{
-			 default:
-			 case EHyperExtensionFixMethod::MoveFootTowardsThigh:
-			 	{
-			 		FVector ThighToLockVector_CS = RightLockLocation_CS - RightThighLocation_CS;
-			 		RightLockLocation_CS = RightThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
-			 	} break;
-			
-			 case EHyperExtensionFixMethod::MoveFootUnderThigh:
-			 	{
-			 		const FVector FootShiftVector = RightLockLocation_CS - FVector(RightThighLocation_CS.X, RightThighLocation_CS.Y, RightLockLocation_CS.Z);
-					const float ThighHeight = RightThighLocation_CS.Z - RightLockLocation_CS.Z;
-
-			 		if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
-			 		{
-			 			ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
-			 		}
-			        else
-			        {
-				        ThighToLockDist_XY = 0.0f;
-			        }
-			 		
-			 		RightLockLocation_CS = FVector(RightThighLocation_CS.X, RightThighLocation_CS.Y, RightLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
-			 		 
-			 	} break;
+				RightFootDefinition.CalculateLength(Output.Pose);
 			}
+
+			//Determine whether the leg is hyper-extended or not.
+			const FTransform RightThighTransform_CS = Output.Pose.GetComponentSpaceTransform(RightFootDefinition.Bones.Last().CachedCompactPoseIndex);
+			const FVector RightThighLocation_CS = RightThighTransform_CS.GetLocation();
+		
+			const float StartingLegLength = FVector::Distance(RightThighLocation_CS, RightFootLocation_CS);
+			const float MaxAllowableLegLength = StartingLegLength + ((RightFootDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
+			const float LockedLegLength = FVector::Distance(RightThighLocation_CS, RightLockLocation_CS);
+
+			//Adjust the legs to avoid hyper-extension
+			if(LockedLegLength > MaxAllowableLegLength)
+			{
+				float ThighToLockDist_XY = FVector2D::Distance(FVector2D(RightThighLocation_CS.X, RightThighLocation_CS.Y), FVector2D(RightLockLocation_CS.X, RightLockLocation_CS.Y));
+			
+				switch(LegHyperExtensionFixMethod)
+				{
+				default:
+				case EHyperExtensionFixMethod::MoveFootTowardsThigh:
+					{
+						FVector ThighToLockVector_CS = RightLockLocation_CS - RightThighLocation_CS;
+						RightLockLocation_CS = RightThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
+					} break;
+			
+				case EHyperExtensionFixMethod::MoveFootUnderThigh:
+					{
+						const FVector FootShiftVector = RightLockLocation_CS - FVector(RightThighLocation_CS.X, RightThighLocation_CS.Y, RightLockLocation_CS.Z);
+						const float ThighHeight = RightThighLocation_CS.Z - RightLockLocation_CS.Z;
+
+						if(FMath::IsNearlyZero(FootShiftVector.SizeSquared())) //Edge case where the foot is directly below thigh joint.
+						{
+							RightLockLocation_CS = WeightedRightLockPosition_CS;
+						}
+						else if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
+						{
+							ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
+							RightLockLocation_CS = FVector(RightThighLocation_CS.X, RightThighLocation_CS.Y, RightLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+						else
+						{
+							ThighToLockDist_XY = 0.0f;
+							RightLockLocation_CS = FVector(RightThighLocation_CS.X, RightThighLocation_CS.Y, RightLockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+						
+					} break;
+				}
 				
-			WeightedRightLockPosition_CS = FMath::Lerp(RightFootLocation_CS, RightLockLocation_CS, RightFootLockWeight);
+				WeightedRightLockPosition_CS = FMath::Lerp(RightFootLocation_CS, RightLockLocation_CS, RightFootLockWeight);
+			}
 		}
 		
 		//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
@@ -379,54 +394,61 @@ void FAnimNode_FootLocker::EvaluateLimb(TArray<FBoneTransform>& OutBoneTransform
 
 		FVector WeightedLockPosition_CS = FMath::Lerp(FootLocation_CS, LockLocation_CS, FootLockWeight);
 
-		//Calculate the leg length if it has not already been done
-		if(LimbDefinition.Length < 0.0f)
+		if(LegHyperExtensionFixMethod != EHyperExtensionFixMethod::None)
 		{
-			LimbDefinition.CalculateLength(Output.Pose);
-		}
-
-		//Determine whether the leg is hyper-extended or not.
-		const FTransform ThighTransform_CS = Output.Pose.GetComponentSpaceTransform(LimbDefinition.Bones.Last().CachedCompactPoseIndex);
-		const FVector ThighLocation_CS = ThighTransform_CS.GetLocation();
-		
-		const float StartingLegLength = FVector::Distance(ThighLocation_CS, FootLocation_CS);
-		const float MaxAllowableLegLength = StartingLegLength + ((LimbDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
-		const float LockedLegLength = FVector::Distance(ThighLocation_CS, LockLocation_CS);
-
-		//Adjust the legs to avoid hyper-extension
-		if(LockedLegLength > MaxAllowableLegLength)
-		{
-			float ThighToLockDist_XY = FVector2D::Distance(FVector2D(ThighLocation_CS.X, ThighLocation_CS.Y), FVector2D(LockLocation_CS.X, LockLocation_CS.Y));
-			
-			switch(LegHyperExtensionFixMethod)
+			//Calculate the leg length if it has not already been done
+			if(LimbDefinition.Length < 0.0f)
 			{
-			 default:
-			 case EHyperExtensionFixMethod::MoveFootTowardsThigh:
-			 	{
-			 		FVector ThighToLockVector_CS = LockLocation_CS - ThighLocation_CS;
-			 		LockLocation_CS = ThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
-			 	} break;
-			
-			 case EHyperExtensionFixMethod::MoveFootUnderThigh:
-			 	{
-			 		const FVector FootShiftVector = LockLocation_CS - FVector(ThighLocation_CS.X, ThighLocation_CS.Y, LockLocation_CS.Z);
-					const float ThighHeight = ThighLocation_CS.Z - LockLocation_CS.Z;
-
-			 		if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
-			 		{
-			 			ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
-			 		}
-			        else
-			        {
-				        ThighToLockDist_XY = 0.0f;
-			        }
-			 		
-			 		LockLocation_CS = FVector(ThighLocation_CS.X, ThighLocation_CS.Y, LockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
-			 		 
-			 	} break;
+				LimbDefinition.CalculateLength(Output.Pose);
 			}
+
+			//Determine whether the leg is hyper-extended or not.
+			const FTransform ThighTransform_CS = Output.Pose.GetComponentSpaceTransform(LimbDefinition.Bones.Last().CachedCompactPoseIndex);
+			const FVector ThighLocation_CS = ThighTransform_CS.GetLocation();
+		
+			const float StartingLegLength = FVector::Distance(ThighLocation_CS, FootLocation_CS);
+			const float MaxAllowableLegLength = StartingLegLength + ((LimbDefinition.Length  - StartingLegLength) * AllowLegExtensionRatio);
+			const float LockedLegLength = FVector::Distance(ThighLocation_CS, LockLocation_CS);
+
+			//Adjust the legs to avoid hyper-extension
+			if(LockedLegLength > MaxAllowableLegLength)
+			{
+				float ThighToLockDist_XY = FVector2D::Distance(FVector2D(ThighLocation_CS.X, ThighLocation_CS.Y), FVector2D(LockLocation_CS.X, LockLocation_CS.Y));
+			
+				switch(LegHyperExtensionFixMethod)
+				{
+				default:
+				case EHyperExtensionFixMethod::MoveFootTowardsThigh:
+					{
+						FVector ThighToLockVector_CS = LockLocation_CS - ThighLocation_CS;
+						LockLocation_CS = ThighLocation_CS + (ThighToLockVector_CS.GetSafeNormal() * MaxAllowableLegLength);
+					} break;
+			
+				case EHyperExtensionFixMethod::MoveFootUnderThigh:
+					{
+						const FVector FootShiftVector = LockLocation_CS - FVector(ThighLocation_CS.X, ThighLocation_CS.Y, LockLocation_CS.Z); //  _ horiztonal vector
+						const float ThighHeight = ThighLocation_CS.Z - LockLocation_CS.Z; //  | vertical length
+
+						if(FMath::IsNearlyZero(FootShiftVector.SizeSquared())) //Edge case where the foot is directly below thigh joint.
+						{
+							LockLocation_CS = WeightedLockPosition_CS;
+						}
+						else if(FMath::Abs(MaxAllowableLegLength - ThighHeight) > 0.01f)
+						{
+							ThighToLockDist_XY = FMath::Sqrt((MaxAllowableLegLength * MaxAllowableLegLength) - (ThighHeight * ThighHeight));
+							LockLocation_CS = FVector(ThighLocation_CS.X, ThighLocation_CS.Y, LockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+						else
+						{
+							ThighToLockDist_XY = 0.0f;
+							LockLocation_CS = FVector(ThighLocation_CS.X, ThighLocation_CS.Y, LockLocation_CS.Z) + (FootShiftVector.GetSafeNormal() * ThighToLockDist_XY);
+						}
+
+					} break;
+				}
 				
-			WeightedLockPosition_CS = FMath::Lerp(FootLocation_CS, LockLocation_CS, FootLockWeight);
+				WeightedLockPosition_CS = FMath::Lerp(FootLocation_CS, LockLocation_CS, FootLockWeight);
+			}
 		}
 		
 		//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
