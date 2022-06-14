@@ -177,12 +177,15 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 				WeightedLeftLockPosition_CS = FMath::Lerp(LeftFootLocation_CS, LeftLockLocation_CS, LeftFootLockWeight);
 			}
 		}
+
+		if(!WeightedLeftLockPosition_CS.ContainsNaN()) //Check for safety
+		{
+			//Set the location of the left foot Transform to the WS lock position but with the toe offset and weighted lerp
+			LeftFootTransform_CS.SetLocation(WeightedLeftLockPosition_CS);
 		
-		//Set the location of the left foot Transform to the WS lock position but with the toe offset and weighted lerp
-		LeftFootTransform_CS.SetLocation(WeightedLeftLockPosition_CS);
-		
-		//Perform foot lock with IK target
-		OutBoneTransforms.Add(FBoneTransform(LeftFootDefinition.IkTarget.CachedCompactPoseIndex, LeftFootTransform_CS));
+			//Perform foot lock with IK target
+			OutBoneTransforms.Add(FBoneTransform(LeftFootDefinition.IkTarget.CachedCompactPoseIndex, LeftFootTransform_CS));
+		}
 	}
 	
 	bLeftFootLock_LastFrame = bLeftFootLock;
@@ -333,12 +336,15 @@ void FAnimNode_FootLocker::EvaluateFootLocking(FComponentSpacePoseContext& Outpu
 				WeightedRightLockPosition_CS = FMath::Lerp(RightFootLocation_CS, RightLockLocation_CS, RightFootLockWeight);
 			}
 		}
+
+		if(!WeightedRightLockPosition_CS.ContainsNaN()) //Check for safety
+		{
+			//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
+			RightFootTransform_CS.SetLocation(WeightedRightLockPosition_CS);
 		
-		//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
-		RightFootTransform_CS.SetLocation(WeightedRightLockPosition_CS);
-		
-		//Perform foot lock with IK target
-		OutBoneTransforms.Add(FBoneTransform(RightFootDefinition.IkTarget.CachedCompactPoseIndex, RightFootTransform_CS));
+			//Perform foot lock with IK target
+			OutBoneTransforms.Add(FBoneTransform(RightFootDefinition.IkTarget.CachedCompactPoseIndex, RightFootTransform_CS));
+		}
 	}
 	
 	bRightFootLock_LastFrame = bRightFootLock;
@@ -450,12 +456,15 @@ void FAnimNode_FootLocker::EvaluateLimb(TArray<FBoneTransform>& OutBoneTransform
 				WeightedLockPosition_CS = FMath::Lerp(FootLocation_CS, LockLocation_CS, FootLockWeight);
 			}
 		}
+
+		if(!WeightedLockPosition_CS.ContainsNaN()) //Check for safety
+		{
+			//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
+			FootTransform_CS.SetLocation(WeightedLockPosition_CS);
 		
-		//Set the location of the foot Transform to the WS lock position but with the toe offset and weighted lerp
-		FootTransform_CS.SetLocation(WeightedLockPosition_CS);
-		
-		//Perform foot lock with IK target
-		OutBoneTransforms.Add(FBoneTransform(LimbDefinition.IkTarget.CachedCompactPoseIndex, FootTransform_CS));
+			//Perform foot lock with IK target
+			OutBoneTransforms.Add(FBoneTransform(LimbDefinition.IkTarget.CachedCompactPoseIndex, FootTransform_CS));
+		}
 	}
 	
 	bLockFoot_LastFrame = bLockFoot;
