@@ -8,6 +8,21 @@ public class Strider : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
+		PrivateIncludePaths.AddRange(
+			new string[] {
+				"Strider/Public",
+				"Strider/Public/Objects",
+				"Strider/Public/Objects/AnimNotifies",
+				"Strider/Public/Components",
+
+				"Strider/Private",
+				"Strider/Private/Objects",
+				"Strider/Private/Objects/AnimNotifies",
+				"Strider/Private/Components",
+				// ... add other private include paths required here ...
+			}
+		);
+		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{

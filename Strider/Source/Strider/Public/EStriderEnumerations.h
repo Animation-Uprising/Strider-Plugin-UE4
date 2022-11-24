@@ -37,3 +37,17 @@ enum class ESlopeWarpQuality : uint8
 	PerFootShape UMETA(DisplayName = "Per Foot Shape Trace", Tooltip = "shape traces will be cast from each foot to determine the slope position and normal per foot and adjust accordingly."),
 	LODBased UMETA(DisplayName = "Dynamic - LOD Based", Tooltip = "Different quality levels will be used for different LOD's of the character. See LOD section for configuration.")
 };
+
+/** An enumeration for foot identification for the foot locker node*/
+UENUM(BlueprintType)
+enum class EFootLockId : uint8
+{
+	LeftFoot,
+	RightFoot,
+	Foot3,
+	Foot4,
+	Foot5,
+	Foot6,
+	Foot7,
+	Foot8
+};

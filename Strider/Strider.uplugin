@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 1.7,
-	"VersionName": "Strider v1.7",
-	"EngineVersion" : "4.26.0",
+	"Version": 1.8,
+	"VersionName": "Strider v1.8",
+	"EngineVersion" : "5.1.0",
 	"FriendlyName": "Strider",
 	"Description": "An animation plugin which provided procedural animation warping nodes to modify a character's stride and posture in certain situations.",
 	"Category": "Animation",
@@ -21,7 +21,7 @@
 			"Name": "Strider",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
-			"WhitelistPlatforms": [ "Win64", "Win32" ],
+			"WhitelistPlatforms": [ "Win64", "Win32", "Linux", "LinuxAArch64"],
 			"AdditionalDependencies": [
 				"AnimGraphRuntime"
 			]
@@ -30,7 +30,7 @@
 			"Name": "StriderEditor",
 			"Type": "UncookedOnly",
 			"LoadingPhase": "PreDefault",
-			"WhitelistPlatforms": [ "Win64", "Win32" ],
+			"WhitelistPlatforms": [ "Win64", "Win32", "Linux", "LinuxAArch64"],
 			"AdditionalDependencies": [
 				"AnimGraph"
 			]
