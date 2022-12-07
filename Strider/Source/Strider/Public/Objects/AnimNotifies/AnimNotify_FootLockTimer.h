@@ -25,6 +25,11 @@ public:
 	float GroundingTime;
 
 public:
+#if ENGINE_MAJOR_VERSION >= 5
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 		const FAnimNotifyEventReference& EventReference) override;
+#else
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+#endif
+	
 };
