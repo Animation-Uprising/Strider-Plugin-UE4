@@ -125,7 +125,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 	OutBoneTransforms.Add(FBoneTransform(IkRoot.CachedCompactPoseIndex, IkRootTransform_CS));
 
 	FVector AverageHorizontalShift = FVector::ZeroVector;
-	for (FLimbDefinition& Limb : Limbs)
+	for (FSlopeLimbDefinition& Limb : Limbs)
 	{
 		//Limb Length
 		if (Limb.Length < 0.0f)
@@ -223,7 +223,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 		//Draw final foot & IkChain for each limb
 		if (SlopeRollCompensation == ESlopeRollCompensation::AdjustFeet)
 		{
-			for (FLimbDefinition& Limb : Limbs)
+			for (FSlopeLimbDefinition& Limb : Limbs)
 			{
 				FVector IkTargetLocation_GS = UStriderMath::GetBoneWorldLocation(Limb.TipLocation_CS, AnimInstanceProxy);
 
@@ -234,7 +234,7 @@ void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseC
 		}
 		else
 		{
-			for (FLimbDefinition& Limb : Limbs)
+			for (FSlopeLimbDefinition& Limb : Limbs)
 			{
 				FTransform IkTarget_LS = Output.Pose.GetLocalSpaceTransform(Limb.IkTarget.CachedCompactPoseIndex);
 				FVector IkTargetLocation_CS = IkRootTransform_CS.TransformPosition(IkTarget_LS.GetLocation());
@@ -284,12 +284,12 @@ void FAnimNode_SlopeWarp::UpdateInternal(const FAnimationUpdateContext& Context)
 	FAnimNode_SkeletalControlBase::UpdateInternal(Context);
 	DeltaTime = Context.GetDeltaTime();
 
-	//Clamp the slope if it is beyond max slope degrees (Use a fast cheety method)
+	//Clamp the slope if it is beyond max slope degrees (Use a fast cheaty method)
 	SlopeNormal.Normalize();
-	float SlopeAngle = FMath::Abs(UStriderMath::AngleBetween(FVector::UpVector, SlopeNormal));
+	const float SlopeAngle = FMath::Abs(UStriderMath::AngleBetween(FVector::UpVector, SlopeNormal));
 	if (SlopeAngle > MaxSlopeAngle)
 	{
-		float Lerp = (SlopeAngle - MaxSlopeAngle) / SlopeAngle;
+		const float Lerp = (SlopeAngle - MaxSlopeAngle) / SlopeAngle;
 		SlopeNormal = FMath::Lerp(SlopeNormal, FVector::UpVector, Lerp);
 	}
 
@@ -335,29 +335,58 @@ void FAnimNode_SlopeWarp::PreUpdate(const UAnimInstance* InAnimInstance)
 		return;
 	}
 
-	if (!CharMoveComponent || !Character)
-	{
-		Character = Cast<ACharacter>(InAnimInstance->GetOwningActor());
 
-		if (Character)
-			CharMoveComponent = Cast<UCharacterMovementComponent>(Character->GetMovementComponent());	
-	}
-	else if(CharMoveComponent->IsMovingOnGround())
+	switch(SlopeWarpQuality)
 	{
-		const FTransform& CharTransform = Character->GetMesh()->GetComponentTransform();
+	case ESlopeWarpQuality::Capsule:
+		if (!CharMoveComponent || !Character)
+		{
+			Character = Cast<ACharacter>(InAnimInstance->GetOwningActor());
 
-		SlopeNormal = CharTransform.InverseTransformVector(
-			CharMoveComponent->CurrentFloor.HitResult.Normal);
+			if (Character)
+				CharMoveComponent = Cast<UCharacterMovementComponent>(Character->GetMovementComponent());	
+		}
+		else if(CharMoveComponent->IsMovingOnGround())
+		{
+			const FTransform& CharTransform = Character->GetMesh()->GetComponentTransform();
 
-		SlopePoint = CharTransform.InverseTransformPosition(
-			CharMoveComponent->CurrentFloor.HitResult.ImpactPoint);
-	}
-	else
-	{
-		//Reset the slope when not grounded
-		SlopeNormal = FVector::UpVector;
-		SlopePoint = FVector::ZeroVector;
-	}
+			SlopeNormal = CharTransform.InverseTransformVector(
+				CharMoveComponent->CurrentFloor.HitResult.Normal);
+
+			SlopePoint = CharTransform.InverseTransformPosition(
+				CharMoveComponent->CurrentFloor.HitResult.ImpactPoint);
+		}
+		else
+		{
+			//Reset the slope when not grounded
+			SlopeNormal = FVector::UpVector;
+			SlopePoint = FVector::ZeroVector;
+		}
+
+
+
+
+		break;
+
+
+		
+	case ESlopeWarpQuality::PerFootRay:
+		
+
+
+
+		
+		break;
+	case ESlopeWarpQuality::PerFootShape: break;
+	case ESlopeWarpQuality::LODBased: break;
+	default: break;	
+	};
+
+
+
+	
+
+	
 }
 
 void FAnimNode_SlopeWarp::InitializeBoneReferences(const FBoneContainer& RequiredBones)
@@ -366,7 +395,7 @@ void FAnimNode_SlopeWarp::InitializeBoneReferences(const FBoneContainer& Require
 	HipAdjustment.Initialize(RequiredBones);
 
 	bool bLimbsValid = true;
-	for (FLimbDefinition & LimbDef : Limbs)
+	for (FSlopeLimbDefinition & LimbDef : Limbs)
 	{
 		LimbDef.Initialize(RequiredBones);
 

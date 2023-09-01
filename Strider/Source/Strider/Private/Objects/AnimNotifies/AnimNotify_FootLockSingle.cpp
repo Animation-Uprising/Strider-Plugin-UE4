@@ -2,7 +2,7 @@
 
 
 #include "AnimNotify_FootLockSingle.h"
-
+#include "Runtime/Launch/Resources/Version.h"
 #include "FootLockManager.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
@@ -15,8 +15,19 @@ void UAnimNotify_FootLockSingle::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 {
 	Super::Notify(MeshComp, Animation);
 #endif
+    if(!MeshComp
+       || !Animation)
+	{
+		return;
+	}
 
-	if(UFootLockManager* FootLockManager = Cast<UFootLockManager>(MeshComp->GetOwner()->GetComponentByClass(UFootLockManager::StaticClass())))
+	AActor* Owner = MeshComp->GetOwner();
+	if(!Owner)
+	{
+		return;
+	}
+
+	if(UFootLockManager* FootLockManager = Cast<UFootLockManager>(Owner->GetComponentByClass(UFootLockManager::StaticClass())))
 	{
 		if(bSetLocked)
 		{

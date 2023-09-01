@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "EStriderEnumerations.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "AnimNotify_FootLockTimer.generated.h"
 
 /**

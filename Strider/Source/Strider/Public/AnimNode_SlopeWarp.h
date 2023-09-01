@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Inputs, meta = (PinHiddenByDefault))
 	FVector SlopePoint;
 
+	UPROPERTY(EditAnywhere, Category = Settings)
+	ESlopeWarpQuality SlopeWarpQuality;
+
 	/** The method used to detect the slope (the slope normal and slope point) */
 	UPROPERTY(EditAnywhere, Category = Settings)
 	ESlopeDetectionMode SlopeDetectionMode;
@@ -77,7 +80,7 @@ public:
 
 	/** List of limbs to calculate and apply slope warping to. */
 	UPROPERTY(EditAnywhere, Category = BoneReference)
-	TArray<FLimbDefinition> Limbs; 
+	TArray<FSlopeLimbDefinition> Limbs; 
 
 	/** List of additional bones to adjust along with the hips (often used for the IkRoot)*/
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = BoneReference)

@@ -112,6 +112,48 @@ public:
 	void CalculateLength(FCSPose<FCompactPose>& Pose);
 };
 
+USTRUCT(BlueprintType)
+struct FSlopeLimbDefinition
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, Category = LimbSettings)
+	FBoneReference FootBone;
+
+	UPROPERTY(EditAnywhere, Category = LimbSettings)
+	FBoneReference ToeBone;
+
+	UPROPERTY(EditAnywhere, Category = LimbSettings)
+	FBoneReference IkTarget;
+
+	UPROPERTY(EditAnywhere, Category = LimbSettings)
+	int32 LimbBoneCount;
+
+	UPROPERTY(EditAnywhere, Category = LimbSettings)
+	float FootWidth;
+	
+public:
+	TArray<FBoneReference> Bones;
+	float LengthSqr;
+	float Length;
+	float HeightDelta;
+
+	FVector TipLocation_CS;
+	FTransform BaseBoneTransform_CS;
+	
+	FVector SlopeNormal;      //Determined via trace in pre-update
+	FVector SlopePosition;    //Determined via trace in pre-update
+	FVector LastFootPosition; //Recorded each frame in animation update
+	FVector FootVelocity;	  //calculated each frame in animation update
+
+public:
+	FSlopeLimbDefinition();
+	void Initialize(const FBoneContainer& PoseBones);
+	bool IsValid(const FBoneContainer& PoseBones);
+	void CalculateLength(FCSPose<FCompactPose>& Pose);
+};
+
 /** The data structure to define Two Bone IK limbs for foot locking + additional slots for foot placement*/
 USTRUCT(BlueprintType)
 struct FFootLockLimbDefinition
