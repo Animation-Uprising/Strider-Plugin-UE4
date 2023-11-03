@@ -34,7 +34,7 @@ public:
 };
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Strider), meta=(BlueprintSpawnableComponent) )
 class STRIDER_API UFootLockManager : public UActorComponent
 {
 	GENERATED_BODY()

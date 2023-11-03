@@ -26,29 +26,30 @@ static TAutoConsoleVariable<int32> CVarSlopeWarpEnabled(
 
 FAnimNode_SlopeWarp::FAnimNode_SlopeWarp()
 	: SlopeNormal(FVector::UpVector),
-	SlopePoint(FVector::ZeroVector),
-	SlopeDetectionMode(ESlopeDetectionMode::ManualSlope),
-	SlopeRollCompensation(ESlopeRollCompensation::AdjustHips),
-	IKRootLeftVector(FVector::ForwardVector),
-	MaxSlopeAngle(45.0f),
-	HeightOffset(0.0f),
-	SlopeSmoothingRate(-1.0f),
-	AllowExtensionPercent(0.0f),
-	DownSlopeShiftRate(20.0f),
-	LastHipShift(FVector::ZeroVector),
-	CurrentSlopeNormal(FVector::UpVector),
-	CurrentSlopePoint(FVector::ZeroVector),
-	IKRootOffset(FQuat::Identity),
-	DeltaTime(0.0f),
-	bValidCheckResult(false),
-	Character(nullptr),
-	CharMoveComponent(nullptr),
-	AnimInstanceProxy(nullptr)
+	  SlopePoint(FVector::ZeroVector),
+      SlopeWarpQuality(ESlopeWarpQuality::Capsule),
+	  SlopeDetectionMode(ESlopeDetectionMode::ManualSlope),
+	  SlopeRollCompensation(ESlopeRollCompensation::AdjustHips),
+	  IKRootLeftVector(FVector::ForwardVector),
+	  MaxSlopeAngle(45.0f),
+	  HeightOffset(0.0f),
+	  SlopeSmoothingRate(-1.0f),
+	  AllowExtensionPercent(0.0f),
+	  DownSlopeShiftRate(20.0f),
+	  LastHipShift(FVector::ZeroVector),
+	  CurrentSlopeNormal(FVector::UpVector),
+	  CurrentSlopePoint(FVector::ZeroVector),
+	  IKRootOffset(FQuat::Identity),
+	  DeltaTime(0.0f),
+	  bValidCheckResult(false),
+	  Character(nullptr),
+	  CharMoveComponent(nullptr),
+	  AnimInstanceProxy(nullptr)
 {
 }
 
 void FAnimNode_SlopeWarp::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext& Output,
-	TArray<FBoneTransform>& OutBoneTransforms)
+                                                            TArray<FBoneTransform>& OutBoneTransforms)
 {
 	check(OutBoneTransforms.Num() == 0);
 

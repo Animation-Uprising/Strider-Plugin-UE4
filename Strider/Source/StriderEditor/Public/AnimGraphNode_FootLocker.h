@@ -31,6 +31,6 @@ protected:
 	// End of UAnimGraphNode_Base interface
 
 	// UAnimGraphNode_SkeletalControlBase interface
-	virtual const FAnimNode_SkeletalControlBase* GetNode() const;
+	virtual const FAnimNode_SkeletalControlBase* GetNode() const override;
 	// End of UAnimGraphNode_SkeletalControlBase interface
 };
