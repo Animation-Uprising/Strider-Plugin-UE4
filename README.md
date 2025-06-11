@@ -1,4 +1,7 @@
-# Strider-Plugin-UE4
+# Strider Is Now Free
+I have decided to leave the game industry entirely and therefore have made strider free and public. Unfortuantely, as a result no support can be provided and there will likely be no future updates to this repository.
+
+# Strider-Plugin-UE4/UE5
 This is a private repository for verified users of the 'Strider Plugin' (UE4) to access, fork and create pull requests to the plugin source code.
 
 # Installation
